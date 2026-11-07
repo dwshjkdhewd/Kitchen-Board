@@ -1,0 +1,562 @@
+<title>Kitchen Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one phone-first column — alert stack, parent call buttons, then tabbed Today / Chores / Calendar / Family. */
+:root{
+  --bg:#eef2f4; --surface:#ffffff; --sunk:#e2e8ec; --ink:#14232c; --muted:#5b6c76; --line:#cdd7dd;
+  --accent:#0f6e6a; --accent-ink:#ffffff; --dinner:#e8892b; --dinner-ink:#2a1500; --summon:#c43d3d; --summon-ink:#ffffff;
+  --ok:#2f8a4f;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f171c; --surface:#17232a; --sunk:#0b1216; --ink:#e6eef2; --muted:#93a4ad; --line:#2a3a43;
+  --accent:#3fb8b0; --accent-ink:#04201e; --dinner:#f0a050; --dinner-ink:#2a1500; --summon:#ef6b6b; --summon-ink:#2a0606; --ok:#5cc57f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f171c; --surface:#17232a; --sunk:#0b1216; --ink:#e6eef2; --muted:#93a4ad; --line:#2a3a43;
+  --accent:#3fb8b0; --accent-ink:#04201e; --dinner:#f0a050; --dinner-ink:#2a1500; --summon:#ef6b6b; --summon-ink:#2a0606; --ok:#5cc57f; color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font:16px/1.45 var(--body)}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding-block:12px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font:800 1.7rem/1 var(--display);letter-spacing:-.01em;margin:0;flex:1;min-width:0;text-wrap:balance}
+h2{font:700 1.15rem/1.2 var(--display);margin:0;text-wrap:balance}
+h3{font:700 .78rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px 6px 6px;font-weight:700}
+.dot{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font:800 .8rem/1 var(--display);flex:none}
+.dot.sm{width:20px;height:20px;font-size:.66rem}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:.9rem}
+.iconbtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* alerts */
+#alerts{display:flex;flex-direction:column;gap:10px}
+.alert{border-radius:var(--r);padding:16px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center}
+.alert.dinner{background:var(--dinner);color:var(--dinner-ink)}
+.alert.summon,.alert.note{background:var(--summon);color:var(--summon-ink)}
+.alert.fresh{animation:pulse 1s ease-in-out 3}
+@keyframes pulse{50%{transform:scale(1.02)}}
+@media (prefers-reduced-motion:reduce){.alert.fresh{animation:none}}
+.alert b{font:800 1.35rem/1.1 var(--display);display:block}
+.alert small{opacity:.85}
+.alert .go{border:0;border-radius:999px;padding:10px 16px;font-weight:700;background:rgba(255,255,255,.92);color:#111;grid-row:span 2}
+
+/* parent call panel */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.calls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.callbtn{border:0;border-radius:12px;padding:16px 8px;font:800 1.02rem/1.15 var(--display);display:flex;flex-direction:column;align-items:center;gap:6px;min-height:92px;justify-content:center}
+.callbtn .glyph{font-size:1.6rem;line-height:1}
+.callbtn.dinner{background:var(--dinner);color:var(--dinner-ink)}
+.callbtn.summon{background:var(--summon);color:var(--summon-ink)}
+.callbtn.note{background:var(--sunk);color:var(--ink);border:1px solid var(--line)}
+.who{display:flex;flex-wrap:wrap;gap:6px}
+.pick{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px 5px 5px;display:inline-flex;gap:6px;align-items:center;font-weight:700;font-size:.9rem}
+.pick[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.pick.all{padding-left:12px}
+
+/* tabs */
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--sunk);border-radius:999px;padding:4px;gap:4px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+nav.tabs button{border:0;background:transparent;border-radius:999px;padding:9px 4px;font-weight:700;color:var(--muted)}
+nav.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.view{display:flex;flex-direction:column;gap:20px}
+section{display:flex;flex-direction:column;gap:10px}
+.row-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line);min-width:0}
+.item:first-child{border-top:0}
+.item .txt{flex:1;min-width:0}
+.item .t{font-weight:700;overflow-wrap:anywhere}
+.item .s{color:var(--muted);font-size:.86rem}
+.item.done .t{text-decoration:line-through;color:var(--muted)}
+.check{width:30px;height:30px;border-radius:9px;border:2px solid var(--line);background:var(--bg);flex:none;display:grid;place-items:center;font-weight:800;color:transparent}
+.check[aria-checked="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.x{border:0;background:transparent;color:var(--muted);font-size:1.2rem;padding:4px 8px;border-radius:8px}
+.x:hover{background:var(--sunk)}
+.empty{padding:18px;color:var(--muted);text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.acks{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px}
+.tag{font-size:.75rem;font-weight:700;border-radius:6px;padding:2px 7px;background:var(--sunk);color:var(--muted)}
+.when{font:700 .9rem/1.1 var(--display);font-variant-numeric:tabular-nums;width:56px;flex:none;color:var(--accent)}
+
+/* calendar */
+.cal-head{display:flex;align-items:center;gap:8px}
+.cal-head h2{flex:1}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.dow{font-size:.72rem;font-weight:700;color:var(--muted);text-align:center;letter-spacing:.05em}
+.day{aspect-ratio:1/1;max-width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:5px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;font-variant-numeric:tabular-nums;font-weight:700;min-width:0}
+.day.out{opacity:.4}
+.day.today{border-color:var(--accent);border-width:2px}
+.day[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.day .pips{display:flex;gap:2px;flex-wrap:wrap}
+.pip{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.day[aria-pressed="true"] .pip{outline:1.5px solid var(--accent-ink)}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(5,12,16,.55);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:90%;overflow:auto}
+@media (min-width:640px){.scrim{align-items:center}.sheet{border-radius:20px}}
+label.f{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:.9rem}
+.f input,.f select,.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-weight:400;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet .acts{display:flex;justify-content:flex-end;gap:8px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:34px;height:34px;border-radius:50%;border:3px solid transparent}
+.sw[aria-pressed="true"]{border-color:var(--ink)}
+/* lock screen */
+#lock{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;justify-content:space-between;gap:20px;
+  padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(28px + env(safe-area-inset-bottom,0px));
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));overflow:auto;overscroll-behavior:contain;touch-action:manipulation}
+#lock[hidden],[hidden]{display:none!important}
+#lock.dinner{background:var(--dinner);color:var(--dinner-ink)}
+#lock.summon,#lock.note{background:var(--summon);color:var(--summon-ink)}
+#lock .top{display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:700;opacity:.9}
+#lock .mid{display:flex;flex-direction:column;gap:14px}
+#lock .big{font:800 clamp(2.4rem,11vw,4.2rem)/1 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance;overflow-wrap:anywhere}
+#lock .glyph{font-size:4rem;line-height:1;animation:wob 1.2s ease-in-out infinite}
+@keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+#lock .msg{font-size:1.25rem;font-weight:700}
+#lock .meta{opacity:.85}
+#lock .answer{border:0;border-radius:20px;background:rgba(255,255,255,.95);color:#111;font:800 1.5rem/1 var(--display);padding:24px;width:100%}
+#lock .more{text-align:center;font-weight:700;opacity:.85}
+#lock .hint{text-align:center;font-size:.85rem;opacity:.8}
+@media (prefers-reduced-motion:reduce){#lock .glyph{animation:none}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:30;max-width:calc(100% - 32px);font-weight:700}
+.note-ro{font-size:.86rem;color:var(--muted);background:var(--sunk);border-radius:10px;padding:10px 12px}
+@media (max-width:420px){.callbtn{min-height:84px;font-size:.92rem}h1{font-size:1.45rem}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Kitchen Board</h1>
+    <button class="iconbtn" id="soundBtn" aria-pressed="false" title="Play a chime when someone calls you">🔔 Sound off</button>
+    <button class="chip" id="meBtn"><span class="dot" id="meDot" style="background:var(--muted)">?</span><span id="meName">Who are you?</span></button>
+  </header>
+
+  <div id="alerts" aria-live="assertive"></div>
+  <div id="ro" class="note-ro" hidden></div>
+  <div id="parentPanel"></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="today" id="tab-today">Today</button>
+    <button role="tab" data-tab="chores" id="tab-chores">Chores</button>
+    <button role="tab" data-tab="calendar" id="tab-calendar">Calendar</button>
+    <button role="tab" data-tab="family" id="tab-family">Family</button>
+  </nav>
+
+  <main id="view" class="view">
+    <div class="empty">Loading the board…</div>
+  </main>
+</div>
+<div id="sheetRoot"></div>
+<div id="lock" role="alertdialog" aria-modal="true" aria-labelledby="lockTitle" hidden></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ls = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parseYmd = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DOWL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MON = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const COLORS = ["#e4572e","#2e86ab","#8a5cd1","#3a9d5d","#d4a017","#d63d8a","#1f9e9e","#6b7a8f"];
+const fmtTime = t => { if(!t) return "All day"; const [h,m] = t.split(":").map(Number); return ((h%12)||12)+":"+pad(m)+(h<12?"a":"p"); };
+const ago = ms => { const m = Math.round((Date.now()-ms)/60000); if(m<1) return "just now"; if(m<60) return m+" min ago"; const h=Math.round(m/60); return h<24? h+" hr ago" : Math.round(h/24)+" d ago"; };
+
+const now = new Date();
+const S = {
+  db:null, members:[], chores:[], events:[], calls:[], loaded:false,
+  me: ls.get("kb.me"), tab: ls.get("kb.tab") || "today", sound: ls.get("kb.sound")==="1",
+  readOnly:false, calMonth: new Date(now.getFullYear(), now.getMonth(), 1), calSel: ymd(now),
+  callTo: "all", t0: Date.now(), fresh:new Set(), seen:new Set()
+};
+const today = () => ymd(new Date());
+const member = id => S.members.find(m => m.id===id);
+const meM = () => member(S.me);
+const isParent = () => meM()?.role === "parent";
+const initials = n => (n||"?").trim().slice(0,1).toUpperCase();
+const dot = (m, sm) => m ? `<span class="dot${sm?" sm":""}" style="background:${esc(m.color)}" aria-hidden="true">${esc(initials(m.name))}</span>` : `<span class="dot${sm?" sm":""}" style="background:var(--muted)" aria-hidden="true">★</span>`;
+const nameOf = id => id==="all" ? "Everyone" : (member(id)?.name || "Someone");
+
+/* ---------- sound / ring ---------- */
+let actx = null;
+function unlockAudio(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==="suspended") actx.resume(); }catch(e){} }
+function chime(kind){
+  if(!S.sound || !actx) return;
+  try{
+    const notes = kind==="dinner" ? [659,784,988] : [880,660,880,660];
+    notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type="triangle"; o.frequency.value=f;
+      const t=actx.currentTime+i*0.22; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.35,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t+0.22); });
+  }catch(e){}
+}
+let titleTimer=null;
+function ring(call){
+  chime(call.type);
+  try{ navigator.vibrate && navigator.vibrate([200,100,200]); }catch(e){}
+  clearInterval(titleTimer); let n=0;
+  titleTimer=setInterval(()=>{ document.title = (n++%2) ? "Kitchen Board" : "🔔 "+callHeadline(call); if(n>12){clearInterval(titleTimer);document.title="Kitchen Board";} },800);
+}
+
+/* ---------- data helpers ---------- */
+function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2600); }
+async function write(fn, okMsg){
+  if(!S.db){ toast("The board isn't connected yet."); return false; }
+  try{ await fn(S.db); if(okMsg) toast(okMsg); return true; }
+  catch(e){
+    if(e && (e.code==="invalid_argument"||e.code==="not_granted")){ S.readOnly=true; renderRO(); toast("You can view the board but can't change it."); }
+    else if(e && e.code==="quota_exceeded"){ toast("The board is full. Delete some old items first."); }
+    else { toast("That didn't save. Check your connection and try again."); }
+    return false;
+  }
+}
+function renderRO(){
+  const el=$("#ro");
+  if(S.readOnly){ el.hidden=false; el.textContent="You're viewing in read-only mode. To check off chores or answer calls, ask the board's owner to share it with you as a Contributor."; }
+  else el.hidden=true;
+}
+const targets = c => c.to==="all" ? S.members.filter(m=>m.id!==c.from).map(m=>m.id) : [c.to];
+const forMe = c => S.me && c.from!==S.me && (c.to==="all" || c.to===S.me);
+const activeCall = c => !c.cleared;
+const localAcks = new Set((ls.get("kb.localAcks")||"").split(",").filter(Boolean));
+const answered = c => !!(c.acks&&c.acks[S.me]) || localAcks.has(c.id);
+function callHeadline(c){
+  if(c.type==="dinner") return "Dinner's ready!";
+  if(c.type==="summon") return (c.to==="all"?"Everyone":"You")+": come here, please";
+  return c.message || "Message";
+}
+
+/* ---------- chores logic ---------- */
+function choreToday(ch, day){
+  const d = parseYmd(day);
+  if(ch.repeat==="daily") return true;
+  if(ch.repeat==="weekly") return d.getDay()===ch.weekday;
+  if(ch.repeat==="weekdays") return d.getDay()>0 && d.getDay()<6;
+  return !ch.due || ch.due<=day || !(ch.done&&ch.done.once);
+}
+function choreDone(ch, day){ const k = ch.repeat && ch.repeat!=="once" ? day : "once"; return !!(ch.done && ch.done[k]); }
+function choreKey(ch, day){ return ch.repeat && ch.repeat!=="once" ? day : "once"; }
+function repeatLabel(ch){
+  if(ch.repeat==="daily") return "Every day";
+  if(ch.repeat==="weekdays") return "Weekdays";
+  if(ch.repeat==="weekly") return "Every "+DOWL[ch.weekday];
+  if(ch.due){ const t=today(); return ch.due<t ? "Overdue · was due "+fmtDate(ch.due) : ch.due===t ? "Due today" : "Due "+fmtDate(ch.due); }
+  return "One time";
+}
+function fmtDate(s){ const d=parseYmd(s); return DOW[d.getDay()]+" "+MON[d.getMonth()].slice(0,3)+" "+d.getDate(); }
+function visibleChores(day){
+  return S.chores.filter(ch=>{
+    if(!ch.repeat || ch.repeat==="once"){ // one-offs: show until done, and on the day they were done
+      if(ch.done && ch.done.once) return ch.doneOn===day;
+      return !ch.due || ch.due<=day || day===today();
+    }
+    return choreToday(ch, day);
+  });
+}
+
+/* ---------- render ---------- */
+function render(){
+  const m=meM();
+  $("#meName").textContent = m ? m.name : "Who are you?";
+  $("#meDot").outerHTML = m ? dot(m).replace('class="dot"','class="dot" id="meDot"') : `<span class="dot" id="meDot" style="background:var(--muted)">?</span>`;
+  const sb=$("#soundBtn"); sb.setAttribute("aria-pressed", S.sound); sb.textContent = S.sound ? "🔔 Sound on" : "🔕 Sound off";
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===S.tab));
+  renderAlerts(); renderParent(); renderRO();
+  const v=$("#view");
+  if(!S.loaded){ v.innerHTML=`<div class="empty">Loading the board…</div>`; return; }
+  if(!S.db){ v.innerHTML=`<div class="empty">The board couldn't connect. Open it from your Claude account to see your family's chores and calendar.</div>`; return; }
+  if(!S.members.length && S.tab!=="family"){ v.innerHTML = setupHtml(); return; }
+  v.innerHTML = ({today:todayHtml, chores:choresHtml, calendar:calHtml, family:familyHtml}[S.tab]||todayHtml)();
+}
+
+let wakeLock=null, lockedId=null;
+function pendingForMe(){ return S.calls.filter(c=>activeCall(c) && forMe(c) && !answered(c)).sort((a,b)=>a.createdAt-b.createdAt); }
+function renderAlerts(){
+  const list=pendingForMe(); const el=$("#lock"); const wrap=$(".wrap");
+  if(!list.length){
+    if(!el.hidden){ el.hidden=true; el.innerHTML=""; wrap.inert=false; wrap.removeAttribute("aria-hidden"); lockedId=null; releaseWake(); document.title="Kitchen Board"; }
+    return;
+  }
+  const c=list[0], from=member(c.from);
+  const glyph=c.type==="dinner"?"🍽️":c.type==="summon"?"📣":"💬";
+  const btn=c.type==="dinner"?"Coming!":c.type==="summon"?"On my way":"Got it";
+  const title=c.type==="note"?"Message from "+(from?.name||"a parent"):callHeadline(c);
+  el.className=c.type; el.hidden=false; wrap.inert=true; wrap.setAttribute("aria-hidden","true");
+  if(lockedId!==c.id || !el.innerHTML){
+    lockedId=c.id;
+    el.innerHTML=`<div class="top"><span>${dot(from,true)} ${esc(from?.name||"A parent")}</span><span id="lockAgo"></span></div>
+      <div class="mid"><div class="glyph" aria-hidden="true">${glyph}</div><h2 class="big" id="lockTitle">${esc(title)}</h2>
+        ${c.message?`<div class="msg">${esc(c.message)}</div>`:""}
+        <div class="meta">Sent to ${esc(c.to==="all"?"everyone":"you")}. This screen stays until you answer.</div></div>
+      <div class="mid"><button class="answer" data-act="ack" data-id="${esc(c.id)}">${btn}</button>
+        ${list.length>1?`<div class="more">${list.length-1} more waiting after this</div>`:""}
+        <div class="hint">${S.sound?"🔔 Chiming every 15 seconds until you answer":"Tap the button above. Turn on 🔔 Sound so your phone chimes next time."}</div></div>`;
+    try{ el.querySelector(".answer").focus({preventScroll:true}); }catch(e){}
+  }
+  const a=$("#lockAgo"); if(a) a.textContent=ago(c.createdAt);
+  grabWake();
+}
+async function grabWake(){ try{ if(!wakeLock && navigator.wakeLock && document.visibilityState==="visible"){ wakeLock=await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release",()=>{wakeLock=null;}); } }catch(e){ wakeLock=null; } }
+function releaseWake(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=null; }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ renderAlerts(); const p=pendingForMe(); if(p.length) ring(p[0]); } });
+// keep nagging while locked
+setInterval(()=>{ const p=pendingForMe(); if(p.length){ chime(p[0].type); try{ navigator.vibrate && navigator.vibrate([300,150,300,150,300]); }catch(e){} const a=$("#lockAgo"); if(a) a.textContent=ago(p[0].createdAt); } },15000);
+// don't let back/escape dismiss it
+document.addEventListener("keydown",e=>{ if(!$("#lock").hidden && e.key==="Escape"){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
+
+function renderParent(){
+  const el=$("#parentPanel");
+  if(!isParent() || !S.members.length){ el.innerHTML=""; return; }
+  const kids = S.members.filter(m=>m.id!==S.me);
+  const recent = S.calls.filter(c=>c.from===S.me && activeCall(c) && (Date.now()-c.createdAt<24*3600e3 || targets(c).some(id=>!(c.acks&&c.acks[id])))).slice(0,4);
+  el.innerHTML = `<div class="panel">
+    <div class="row-head"><h3>Call the family</h3></div>
+    <div class="who" role="group" aria-label="Who to call">
+      <button class="pick all" data-act="callTo" data-id="all" aria-pressed="${S.callTo==="all"}">Everyone</button>
+      ${kids.map(k=>`<button class="pick" data-act="callTo" data-id="${esc(k.id)}" aria-pressed="${S.callTo===k.id}">${dot(k,true)}${esc(k.name)}</button>`).join("")}
+    </div>
+    <div class="calls">
+      <button class="callbtn dinner" data-act="call" data-type="dinner"><span class="glyph">🍽️</span>Dinner's ready</button>
+      <button class="callbtn summon" data-act="call" data-type="summon"><span class="glyph">📣</span>Come here</button>
+      <button class="callbtn note" data-act="sheet" data-kind="message"><span class="glyph">💬</span>Send a message</button>
+    </div>
+    ${recent.length? `<div class="list">${recent.map(sentRow).join("")}</div>`:""}
+  </div>`;
+}
+function sentRow(c){
+  const tg=targets(c); const acked=tg.filter(id=>c.acks&&c.acks[id]); const waiting=tg.filter(id=>!(c.acks&&c.acks[id]));
+  return `<div class="item"><div class="txt"><div class="t">${esc(callHeadline(c).replace(/^You:/,nameOf(c.to)+":"))}</div>
+    <div class="s">To ${esc(nameOf(c.to))} · ${ago(c.createdAt)} · ${acked.length}/${tg.length} answered</div>
+    <div class="acks">${acked.map(id=>`<span class="tag" style="color:var(--ok)">✓ ${esc(nameOf(id))}</span>`).join("")}${waiting.map(id=>`<span class="tag">… ${esc(nameOf(id))}</span>`).join("")}</div></div>
+    <button class="x" data-act="clearCall" data-id="${esc(c.id)}" aria-label="Clear this call">✕</button></div>`;
+}
+
+function setupHtml(){
+  return `<section><h2>Set up your family</h2>
+    <div class="empty" style="text-align:left">Add everyone in the house first: parents and kids. Parents get the buttons to call people for dinner, add chores and see who answered. Everyone can check off chores and add calendar events.<br><br>
+    <button class="btn" data-act="sheet" data-kind="member">Add a family member</button></div></section>`;
+}
+
+function choreRow(ch, day){
+  const done=choreDone(ch,day); const who=member(ch.assignee);
+  const by = done && ch.done[choreKey(ch,day)];
+  return `<div class="item ${done?"done":""}">
+    <button class="check" role="checkbox" aria-checked="${done}" aria-label="Mark ${esc(ch.title)} done" data-act="toggleChore" data-id="${esc(ch.id)}" data-day="${day}">✓</button>
+    <div class="txt"><div class="t">${esc(ch.title)}</div><div class="s">${esc(repeatLabel(ch))}${done&&by?" · done by "+esc(nameOf(by)):""}</div></div>
+    ${dot(who,true)}
+    ${isParent()?`<button class="x" data-act="delChore" data-id="${esc(ch.id)}" aria-label="Delete chore ${esc(ch.title)}">✕</button>`:""}
+  </div>`;
+}
+function eventRow(e){
+  const who = (e.who&&e.who.length&&e.who[0]!=="all") ? e.who.map(member).filter(Boolean) : [];
+  return `<div class="item"><span class="when">${esc(fmtTime(e.time))}</span>
+    <div class="txt"><div class="t">${esc(e.title)}</div><div class="s">${who.length? esc(who.map(m=>m.name).join(", ")) : "Everyone"}${e.note?" · "+esc(e.note):""}</div></div>
+    <button class="x" data-act="delEvent" data-id="${esc(e.id)}" aria-label="Delete event ${esc(e.title)}">✕</button></div>`;
+}
+const eventsOn = day => S.events.filter(e=>e.date===day).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+
+function todayHtml(){
+  const t=today(); const tm=ymd(new Date(Date.now()+864e5));
+  let chores=visibleChores(t);
+  if(S.me && !isParent()) chores = chores.filter(c=>c.assignee===S.me || c.assignee==="all");
+  const left = chores.filter(c=>!choreDone(c,t)).length;
+  const log = S.calls.filter(c=>Date.now()-c.createdAt<24*3600e3).slice(0,6);
+  return `
+  <section><div class="row-head"><h3>${S.me&&!isParent()?"Your chores today":"Chores today"} · ${left} left</h3>${isParent()?`<button class="btn ghost" data-act="sheet" data-kind="chore">+ Chore</button>`:""}</div>
+    ${chores.length? `<div class="list">${chores.map(c=>choreRow(c,t)).join("")}</div>` : `<div class="empty">No chores today.${isParent()?" Add one with + Chore.":""}</div>`}</section>
+  <section><div class="row-head"><h3>Today · ${esc(fmtDate(t))}</h3><button class="btn ghost" data-act="sheet" data-kind="event" data-day="${t}">+ Event</button></div>
+    ${eventsOn(t).length? `<div class="list">${eventsOn(t).map(eventRow).join("")}</div>`:`<div class="empty">Nothing on the calendar today.</div>`}</section>
+  ${eventsOn(tm).length? `<section><h3>Tomorrow</h3><div class="list">${eventsOn(tm).map(eventRow).join("")}</div></section>`:""}
+  ${log.length? `<section><h3>Calls in the last day</h3><div class="list">${log.map(c=>`<div class="item"><div class="txt"><div class="t">${esc(callHeadline(c).replace(/^You:/,nameOf(c.to)+":"))}</div><div class="s">${esc(nameOf(c.from))} → ${esc(nameOf(c.to))} · ${ago(c.createdAt)}</div></div></div>`).join("")}</div></section>`:""}`;
+}
+
+function choresHtml(){
+  const t=today();
+  const groups=[{id:"all",name:"Anyone"}].concat(S.members);
+  const html = groups.map(g=>{
+    const list=S.chores.filter(c=>c.assignee===g.id).sort((a,b)=>(a.repeat||"").localeCompare(b.repeat||""));
+    if(!list.length) return "";
+    return `<section><div class="row-head"><h3>${esc(g.name)}</h3></div><div class="list">${list.map(c=>choreRow(c,t)).join("")}</div></section>`;
+  }).join("");
+  return `<div class="row-head"><h2>All chores</h2>${isParent()?`<button class="btn" data-act="sheet" data-kind="chore">+ Add chore</button>`:""}</div>
+    ${html || `<div class="empty">No chores yet.${isParent()?" Tap + Add chore to assign the first one.":" A parent can add them."}</div>`}`;
+}
+
+function calHtml(){
+  const m=S.calMonth, first=new Date(m.getFullYear(), m.getMonth(), 1);
+  const start=new Date(first); start.setDate(1-first.getDay());
+  const t=today(); let cells="";
+  for(let i=0;i<42;i++){
+    const d=new Date(start); d.setDate(start.getDate()+i); const k=ymd(d);
+    if(i===35 && d.getMonth()!==m.getMonth()) break;
+    const ev=eventsOn(k);
+    cells+=`<button class="day ${d.getMonth()!==m.getMonth()?"out":""} ${k===t?"today":""}" aria-pressed="${k===S.calSel}" data-act="selDay" data-day="${k}" aria-label="${esc(fmtDate(k))}, ${ev.length} events">
+      <span>${d.getDate()}</span><span class="pips">${ev.slice(0,4).map(e=>{const w=e.who&&e.who[0]&&e.who[0]!=="all"?member(e.who[0]):null;return `<i class="pip" style="${w?"background:"+esc(w.color):""}"></i>`}).join("")}</span></button>`;
+  }
+  const sel=eventsOn(S.calSel);
+  return `<div class="cal-head"><button class="iconbtn" data-act="mon" data-d="-1" aria-label="Previous month">‹</button><h2>${MON[m.getMonth()]} ${m.getFullYear()}</h2><button class="iconbtn" data-act="mon" data-d="0">Today</button><button class="iconbtn" data-act="mon" data-d="1" aria-label="Next month">›</button></div>
+    <div class="grid">${DOW.map(d=>`<div class="dow">${d.slice(0,2)}</div>`).join("")}${cells}</div>
+    <section><div class="row-head"><h3>${esc(fmtDate(S.calSel))}</h3><button class="btn" data-act="sheet" data-kind="event" data-day="${S.calSel}">+ Event</button></div>
+    ${sel.length? `<div class="list">${sel.map(eventRow).join("")}</div>` : `<div class="empty">Nothing planned. Add a practice, appointment or birthday.</div>`}</section>`;
+}
+
+function familyHtml(){
+  return `<div class="row-head"><h2>Family</h2><button class="btn" data-act="sheet" data-kind="member">+ Add person</button></div>
+  ${S.members.length? `<div class="list">${S.members.map(m=>`<div class="item">${dot(m)}<div class="txt"><div class="t">${esc(m.name)}${m.id===S.me?" (you)":""}</div><div class="s">${m.role==="parent"?"Parent":"Kid"}</div></div>
+    ${m.id!==S.me?`<button class="btn ghost" data-act="setMe" data-id="${esc(m.id)}">This is me</button>`:""}
+    <button class="x" data-act="delMember" data-id="${esc(m.id)}" aria-label="Remove ${esc(m.name)}">✕</button></div>`).join("")}</div>` : `<div class="empty">No one added yet.</div>`}
+  <div class="note-ro">Each phone remembers who is using it. Tap your name at the top to switch. Turn on 🔔 Sound so your phone chimes when you're called. Calls only reach phones that have this board open.</div>`;
+}
+
+/* ---------- sheets ---------- */
+let sheetCtx={};
+function openSheet(kind, opts={}){
+  sheetCtx={kind,...opts};
+  let body="";
+  if(kind==="who"){
+    body=`<h2>Who's using this phone?</h2>
+      ${S.members.length? `<div class="list">${S.members.map(m=>`<button class="item" style="border-left:0;border-right:0;border-bottom:0;background:none;text-align:left" data-act="setMe" data-id="${esc(m.id)}">${dot(m)}<span class="txt"><span class="t">${esc(m.name)}</span><br><span class="s">${m.role==="parent"?"Parent":"Kid"}</span></span></button>`).join("")}</div>`:`<div class="empty">No family members yet. Add yourself first.</div>`}
+      <div class="acts"><button class="btn ghost" data-act="sheet" data-kind="member">+ Add someone</button><button class="btn ghost" data-act="close">Close</button></div>`;
+  } else if(kind==="member"){
+    const used=new Set(S.members.map(m=>m.color)); const c=COLORS.find(x=>!used.has(x))||COLORS[0]; sheetCtx.color=c;
+    body=`<h2>Add a family member</h2><form id="f" class="view" style="gap:12px">
+      <label class="f">Name<input id="f-name" required maxlength="30" autocomplete="off"></label>
+      <label class="f">Role<select id="f-role"><option value="kid">Kid</option><option value="parent" ${S.members.length?"":"selected"}>Parent</option></select></label>
+      <div class="f" style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.9rem">Color<div class="swatches">${COLORS.map(x=>`<button type="button" class="sw" style="background:${x}" data-act="sw" data-c="${x}" aria-pressed="${x===c}" aria-label="Color ${x}"></button>`).join("")}</div></div>
+      <div class="acts"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn">Add</button></div></form>`;
+  } else if(kind==="chore"){
+    body=`<h2>New chore</h2><form id="f" class="view" style="gap:12px">
+      <label class="f">What needs doing<input id="f-title" required maxlength="60" placeholder="Empty the dishwasher" autocomplete="off"></label>
+      <label class="f">Who<select id="f-who"><option value="all">Anyone</option>${S.members.map(m=>`<option value="${esc(m.id)}">${esc(m.name)}</option>`).join("")}</select></label>
+      <div class="two"><label class="f">How often<select id="f-rep"><option value="once">One time</option><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">Every week</option></select></label>
+      <label class="f"><span id="f-due-l">Due</span><input type="date" id="f-due" value="${today()}"></label></div>
+      <div class="acts"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn">Add chore</button></div></form>`;
+  } else if(kind==="event"){
+    body=`<h2>New event</h2><form id="f" class="view" style="gap:12px">
+      <label class="f">What<input id="f-title" required maxlength="60" placeholder="Soccer practice" autocomplete="off"></label>
+      <div class="two"><label class="f">Date<input type="date" id="f-date" required value="${esc(opts.day||today())}"></label><label class="f">Time<input type="time" id="f-time"></label></div>
+      <label class="f">Who's it for<select id="f-who"><option value="all">Everyone</option>${S.members.map(m=>`<option value="${esc(m.id)}">${esc(m.name)}</option>`).join("")}</select></label>
+      <label class="f">Note<input id="f-note" maxlength="100" placeholder="Bring shin guards" autocomplete="off"></label>
+      <div class="acts"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn">Add event</button></div></form>`;
+  } else if(kind==="message"){
+    body=`<h2>Message to ${esc(nameOf(S.callTo))}</h2><form id="f" class="view" style="gap:12px">
+      <label class="f">Message<input id="f-msg" required maxlength="80" placeholder="Leaving for school in 5 minutes" autocomplete="off"></label>
+      <div class="acts"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn">Send</button></div></form>`;
+  }
+  $("#sheetRoot").innerHTML=`<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true">${body}</div></div>`;
+  const first=$("#sheetRoot input, #sheetRoot select"); first && first.focus();
+  const f=$("#f"); if(f) f.addEventListener("submit", onSubmit);
+}
+function closeSheet(){ $("#sheetRoot").innerHTML=""; }
+
+async function onSubmit(e){
+  e.preventDefault(); const k=sheetCtx.kind; const v=id=>($("#"+id)?.value||"").trim();
+  if(k==="member"){
+    const order=S.members.length; const role=v("f-role");
+    let newId=null;
+    const ok=await write(async db=>{ const ref=await db.collection("family").add({name:v("f-name"),role,color:sheetCtx.color,order,createdAt:Date.now()}); newId=ref.id; }, "Added "+v("f-name"));
+    if(ok){ if(!S.me && newId){ S.me=newId; ls.set("kb.me",newId);} closeSheet(); }
+  } else if(k==="chore"){
+    const rep=v("f-rep"), due=v("f-due");
+    const doc={title:v("f-title"),assignee:v("f-who"),repeat:rep,done:{},createdAt:Date.now(),createdBy:S.me||null};
+    if(rep==="once") doc.due=due||today(); if(rep==="weekly") doc.weekday=parseYmd(due||today()).getDay();
+    if(await write(db=>db.collection("chores").add(doc),"Chore added")) closeSheet();
+  } else if(k==="event"){
+    const doc={title:v("f-title"),date:v("f-date"),time:v("f-time")||"",who:[v("f-who")||"all"],note:v("f-note"),createdAt:Date.now(),createdBy:S.me||null};
+    if(await write(db=>db.collection("events").add(doc),"Event added")){ S.calSel=doc.date; closeSheet(); }
+  } else if(k==="message"){
+    if(await sendCall("note", v("f-msg"))) closeSheet();
+  }
+}
+function sendCall(type, message){
+  const doc={type,from:S.me,to:S.callTo,message:message||"",createdAt:Date.now(),acks:{},cleared:false};
+  const label = type==="dinner"?"Dinner call sent":type==="summon"?"Call sent":"Message sent";
+  return write(db=>db.collection("calls").add(doc), label+" to "+nameOf(S.callTo));
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", async e=>{
+  unlockAudio();
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const a=b.dataset.act, id=b.dataset.id;
+  if(a==="scrim"){ if(e.target===b) closeSheet(); return; }
+  if(a==="close") return closeSheet();
+  if(a==="sheet") return openSheet(b.dataset.kind,{day:b.dataset.day});
+  if(a==="sw"){ sheetCtx.color=b.dataset.c; document.querySelectorAll(".sw").forEach(s=>s.setAttribute("aria-pressed", s===b)); return; }
+  if(a==="setMe"){ S.me=id; ls.set("kb.me",id); closeSheet(); render(); toast("Hi, "+(member(id)?.name||"there")); return; }
+  if(a==="callTo"){ S.callTo=id; renderParent(); return; }
+  if(a==="call"){ if(!S.me) return openSheet("who"); sendCall(b.dataset.type); return; }
+  if(a==="ack"){
+    const c=S.calls.find(x=>x.id===id); if(!c) return;
+    b.disabled=true;
+    const ok=await write(db=>db.doc("calls/"+id).update({acks:{...(c.acks||{}),[S.me]:Date.now()}}));
+    if(!ok){ localAcks.add(id); ls.set("kb.localAcks",[...localAcks].slice(-100).join(",")); }
+    c.acks={...(c.acks||{}),[S.me]:Date.now()}; renderAlerts();
+    return;
+  }
+  if(a==="clearCall"){ write(db=>db.doc("calls/"+id).update({cleared:true})); return; }
+  if(a==="toggleChore"){
+    if(!S.me) return openSheet("who");
+    const ch=S.chores.find(x=>x.id===id); if(!ch) return; const day=b.dataset.day; const key=choreKey(ch,day);
+    const done={...(ch.done||{})}; const was=!!done[key]; if(was) delete done[key]; else done[key]=S.me;
+    const patch={done}; if(key==="once") patch.doneOn = was? null : day;
+    write(db=>db.doc("chores/"+id).set({...stripId(ch),...patch}), was? null : "Nice work ✓");
+    return;
+  }
+  if(a==="delChore"){ confirmInline(b, ()=>write(db=>db.doc("chores/"+id).delete(),"Chore deleted")); return; }
+  if(a==="delEvent"){ confirmInline(b, ()=>write(db=>db.doc("events/"+id).delete(),"Event deleted")); return; }
+  if(a==="delMember"){ confirmInline(b, ()=>write(db=>db.doc("family/"+id).delete(),"Removed").then(()=>{ if(S.me===id){S.me=null;ls.set("kb.me","");render();} })); return; }
+  if(a==="selDay"){ S.calSel=b.dataset.day; render(); return; }
+  if(a==="mon"){ const d=+b.dataset.d; if(d===0){ const n=new Date(); S.calMonth=new Date(n.getFullYear(),n.getMonth(),1); S.calSel=ymd(n);} else S.calMonth=new Date(S.calMonth.getFullYear(),S.calMonth.getMonth()+d,1); render(); return; }
+});
+function stripId(o){ const {id,...r}=o; return r; }
+function confirmInline(btn, fn){
+  if(btn.dataset.armed){ fn(); return; }
+  btn.dataset.armed="1"; const old=btn.textContent; btn.textContent="Delete?"; btn.style.color="var(--summon)"; btn.style.fontSize=".85rem"; btn.style.fontWeight="700";
+  setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.armed; btn.textContent=old; btn.removeAttribute("style"); } },3000);
+}
+document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>{ S.tab=b.dataset.tab; ls.set("kb.tab",S.tab); render(); }));
+$("#meBtn").addEventListener("click",()=>openSheet("who"));
+$("#soundBtn").addEventListener("click",()=>{ unlockAudio(); S.sound=!S.sound; ls.set("kb.sound",S.sound?"1":"0"); render(); if(S.sound) chime("dinner"); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
+document.addEventListener("change",e=>{ if(e.target.id==="f-rep"){ const l=$("#f-due-l"); if(l) l.textContent = e.target.value==="weekly" ? "Starting (sets the weekday)" : e.target.value==="once" ? "Due" : "Starting"; } });
+setInterval(()=>{ if(!$("#sheetRoot").innerHTML) { renderAlerts(); if(isParent()) renderParent(); } }, 60000);
+
+/* ---------- connect ---------- */
+async function boot(){
+  const timer=setTimeout(()=>{ if(!S.loaded){ S.loaded=true; render(); } },10000);
+  let db=null;
+  try{ db = window.claude && await window.claude.use("db"); }catch(e){ db=null; }
+  S.db=db;
+  if(!db){ clearTimeout(timer); S.loaded=true; render(); return; }
+  try{ const user=await window.claude.use("user"); if(user){ const can=await user.can("data.write"); if(can===false){ S.readOnly=true; } } }catch(e){}
+  const got=new Set(); const need=["family","chores","events","calls"];
+  const done=n=>{ got.add(n); if(need.every(x=>got.has(x))){ clearTimeout(timer); S.loaded=true; } render(); if(S.loaded&&S.members.length&&!member(S.me)&&!$("#sheetRoot").innerHTML) openSheet("who"); };
+  const onErr=e=>{ if(e&&e.code==="revoked"){ S.db=null; render(); } };
+  db.collection("family").onSnapshot(s=>{ S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.role===b.role?0:a.role==="parent"?-1:1)||(a.order||0)-(b.order||0)); done("family"); }, onErr);
+  db.collection("chores").onSnapshot(s=>{ S.chores=s.docs.map(d=>({id:d.id,...d.data()})); done("chores"); }, onErr);
+  db.collection("events").onSnapshot(s=>{ S.events=s.docs.map(d=>({id:d.id,...d.data()})); done("events"); }, onErr);
+  db.collection("calls").orderBy("createdAt","desc").limit(40).onSnapshot(s=>{
+    S.calls=s.docs.map(d=>({id:d.id,...d.data()}));
+    for(const c of S.calls){
+      if(S.seen.has(c.id)) continue; S.seen.add(c.id);
+      if(c.createdAt > S.t0-5000 && forMe(c)){ S.fresh.add(c.id); ring(c); setTimeout(()=>{S.fresh.delete(c.id);},4000); }
+    }
+    done("calls");
+  }, onErr);
+}
+render();
+boot();
+})();
+</script>
