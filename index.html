@@ -1,5 +1,11 @@
 <title>Kitchen Board</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#eef2f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f171c" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kitchen Board">
+<meta name="format-detection" content="telephone=no">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
@@ -20,20 +26,23 @@
   --bg:#0f171c; --surface:#17232a; --sunk:#0b1216; --ink:#e6eef2; --muted:#93a4ad; --line:#2a3a43;
   --accent:#3fb8b0; --accent-ink:#04201e; --dinner:#f0a050; --dinner-ink:#2a1500; --summon:#ef6b6b; --summon-ink:#2a0606; --ok:#5cc57f; color-scheme:dark}
 html,body{background:var(--bg);color:var(--ink)}
-body{font:16px/1.45 var(--body)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font:16px/1.45 var(--body);overscroll-behavior-y:contain}
 *{box-sizing:border-box}
 button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer}
+button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+button:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){button:active{transform:none}}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .wrap{max-width:720px;margin:0 auto;padding-block:12px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
 header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 h1{font:800 1.7rem/1 var(--display);letter-spacing:-.01em;margin:0;flex:1;min-width:0;text-wrap:balance}
 h2{font:700 1.15rem/1.2 var(--display);margin:0;text-wrap:balance}
 h3{font:700 .78rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
-.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px 6px 6px;font-weight:700}
+.chip{min-height:44px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px 6px 6px;font-weight:700}
 .dot{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font:800 .8rem/1 var(--display);flex:none}
 .dot.sm{width:20px;height:20px;font-size:.66rem}
-.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:.9rem}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.9rem;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .iconbtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 
 /* alerts */
@@ -57,14 +66,15 @@ h3{font:700 .78rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;c
 .callbtn.summon{background:var(--summon);color:var(--summon-ink)}
 .callbtn.note{background:var(--sunk);color:var(--ink);border:1px solid var(--line)}
 .who{display:flex;flex-wrap:wrap;gap:6px}
-.pick{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px 5px 5px;display:inline-flex;gap:6px;align-items:center;font-weight:700;font-size:.9rem}
+.pick{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 14px 5px 5px;display:inline-flex;gap:6px;align-items:center;font-weight:700;font-size:.95rem;min-height:42px}
 .pick[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
 .pick.all{padding-left:12px}
 
 /* tabs */
 nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--sunk);border-radius:999px;padding:4px;gap:4px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-nav.tabs button{border:0;background:transparent;border-radius:999px;padding:9px 4px;font-weight:700;color:var(--muted)}
+nav.tabs button{border:0;background:transparent;border-radius:999px;padding:9px 4px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px}
+nav.tabs svg{width:20px;height:20px;flex:none}
 nav.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .view{display:flex;flex-direction:column;gap:20px}
 section{display:flex;flex-direction:column;gap:10px}
@@ -76,12 +86,12 @@ section{display:flex;flex-direction:column;gap:10px}
 .item .t{font-weight:700;overflow-wrap:anywhere}
 .item .s{color:var(--muted);font-size:.86rem}
 .item.done .t{text-decoration:line-through;color:var(--muted)}
-.check{width:30px;height:30px;border-radius:9px;border:2px solid var(--line);background:var(--bg);flex:none;display:grid;place-items:center;font-weight:800;color:transparent}
+.check{width:36px;height:36px;border-radius:9px;border:2px solid var(--line);background:var(--bg);flex:none;display:grid;place-items:center;font-weight:800;color:transparent}
 .check[aria-checked="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
-.x{border:0;background:transparent;color:var(--muted);font-size:1.2rem;padding:4px 8px;border-radius:8px}
+.x{border:0;background:transparent;color:var(--muted);font-size:1.2rem;min-width:44px;min-height:44px;margin:-6px -8px -6px 0;border-radius:10px;display:inline-grid;place-items:center;flex:none}
 .x:hover{background:var(--sunk)}
 .empty{padding:18px;color:var(--muted);text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
-.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:9px 16px;font-weight:700}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:10px 18px;font-weight:700;min-height:44px}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
 .acks{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px}
 .tag{font-size:.75rem;font-weight:700;border-radius:6px;padding:2px 7px;background:var(--sunk);color:var(--muted)}
@@ -102,10 +112,10 @@ section{display:flex;flex-direction:column;gap:10px}
 
 /* sheet */
 .scrim{position:fixed;inset:0;background:rgba(5,12,16,.55);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:90%;overflow:auto}
+.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:90%;max-height:90dvh;overflow:auto;overscroll-behavior:contain}
 @media (min-width:640px){.scrim{align-items:center}.sheet{border-radius:20px}}
 label.f{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:.9rem}
-.f input,.f select,.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-weight:400;width:100%}
+.f input,.f select,.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:12px;font-weight:400;width:100%;font-size:16px;min-height:48px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sheet .acts{display:flex;justify-content:flex-end;gap:8px}
 .swatches{display:flex;gap:8px;flex-wrap:wrap}
@@ -116,6 +126,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:.9r
   padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(28px + env(safe-area-inset-bottom,0px));
   padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));overflow:auto;overscroll-behavior:contain;touch-action:manipulation}
 #lock[hidden],[hidden]{display:none!important}
+.wrap > :empty{display:none}
 #lock.dinner{background:var(--dinner);color:var(--dinner-ink)}
 #lock.summon,#lock.note{background:var(--summon);color:var(--summon-ink)}
 #lock .top{display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:700;opacity:.9}
@@ -131,7 +142,27 @@ label.f{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:.9r
 @media (prefers-reduced-motion:reduce){#lock .glyph{animation:none}}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:30;max-width:calc(100% - 32px);font-weight:700}
 .note-ro{font-size:.86rem;color:var(--muted);background:var(--sunk);border-radius:10px;padding:10px 12px}
-@media (max-width:420px){.callbtn{min-height:84px;font-size:.92rem}h1{font-size:1.45rem}}
+/* phones: bottom tab bar within thumb reach */
+@media (max-width:699px){
+  .wrap{padding-block:10px calc(100px + env(safe-area-inset-bottom,0px))}
+  nav.tabs{position:fixed;top:auto;left:0;right:0;bottom:0;z-index:15;border-radius:0;gap:0;background:var(--surface);border-top:1px solid var(--line);
+    padding-block:6px calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+  nav.tabs button{flex-direction:column;gap:3px;font-size:.74rem;border-radius:12px;padding:6px 2px;min-height:54px}
+  nav.tabs svg{width:24px;height:24px}
+  nav.tabs button[aria-selected="true"]{background:var(--sunk);color:var(--accent);box-shadow:none}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .item{padding:12px}
+  .item .s{font-size:.88rem}
+}
+@media (max-width:420px){
+  .callbtn{min-height:96px;font-size:.95rem}
+  h1{font-size:1.4rem}
+  #soundBtn .lbl{display:none}
+  .chip #meName{max-width:7em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .two{grid-template-columns:1fr}
+  .cal-head h2{font-size:1.05rem}
+  .day{padding:4px;font-size:.9rem;border-radius:8px}
+}
 </style>
 
 <div class="wrap">
@@ -146,10 +177,10 @@ label.f{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:.9r
   <div id="parentPanel"></div>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" data-tab="today" id="tab-today">Today</button>
-    <button role="tab" data-tab="chores" id="tab-chores">Chores</button>
-    <button role="tab" data-tab="calendar" id="tab-calendar">Calendar</button>
-    <button role="tab" data-tab="family" id="tab-family">Family</button>
+    <button role="tab" data-tab="today" id="tab-today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span>Today</span></button>
+    <button role="tab" data-tab="chores" id="tab-chores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12l3 3 5-6"/></svg><span>Chores</span></button>
+    <button role="tab" data-tab="calendar" id="tab-calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
+    <button role="tab" data-tab="family" id="tab-family"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 5.5 5.5"/></svg><span>Family</span></button>
   </nav>
 
   <main id="view" class="view">
@@ -270,7 +301,7 @@ function render(){
   const m=meM();
   $("#meName").textContent = m ? m.name : "Who are you?";
   $("#meDot").outerHTML = m ? dot(m).replace('class="dot"','class="dot" id="meDot"') : `<span class="dot" id="meDot" style="background:var(--muted)">?</span>`;
-  const sb=$("#soundBtn"); sb.setAttribute("aria-pressed", S.sound); sb.textContent = S.sound ? "🔔 Sound on" : "🔕 Sound off";
+  const sb=$("#soundBtn"); sb.setAttribute("aria-pressed", S.sound); sb.innerHTML = (S.sound ? "🔔" : "🔕")+'<span class="lbl">'+(S.sound?"Sound on":"Sound off")+'</span>'; sb.setAttribute("aria-label", S.sound?"Sound on":"Sound off");
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===S.tab));
   renderAlerts(); renderParent(); renderRO();
   const v=$("#view");
@@ -317,7 +348,7 @@ document.addEventListener("keydown",e=>{ if(!$("#lock").hidden && e.key==="Escap
 
 function renderParent(){
   const el=$("#parentPanel");
-  if(!isParent() || !S.members.length){ el.innerHTML=""; return; }
+  if(!isParent() || !S.members.length || S.tab!=="today"){ el.innerHTML=""; return; }
   const kids = S.members.filter(m=>m.id!==S.me);
   const recent = S.calls.filter(c=>c.from===S.me && activeCall(c) && (Date.now()-c.createdAt<24*3600e3 || targets(c).some(id=>!(c.acks&&c.acks[id])))).slice(0,4);
   el.innerHTML = `<div class="panel">
@@ -431,7 +462,7 @@ function openSheet(kind, opts={}){
   } else if(kind==="member"){
     const used=new Set(S.members.map(m=>m.color)); const c=COLORS.find(x=>!used.has(x))||COLORS[0]; sheetCtx.color=c;
     body=`<h2>Add a family member</h2><form id="f" class="view" style="gap:12px">
-      <label class="f">Name<input id="f-name" required maxlength="30" autocomplete="off"></label>
+      <label class="f">Name<input id="f-name" required maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done"></label>
       <label class="f">Role<select id="f-role"><option value="kid">Kid</option><option value="parent" ${S.members.length?"":"selected"}>Parent</option></select></label>
       <div class="f" style="display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.9rem">Color<div class="swatches">${COLORS.map(x=>`<button type="button" class="sw" style="background:${x}" data-act="sw" data-c="${x}" aria-pressed="${x===c}" aria-label="Color ${x}"></button>`).join("")}</div></div>
       <div class="acts"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn">Add</button></div></form>`;
@@ -451,7 +482,7 @@ function openSheet(kind, opts={}){
       <div class="acts"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn">Add event</button></div></form>`;
   } else if(kind==="message"){
     body=`<h2>Message to ${esc(nameOf(S.callTo))}</h2><form id="f" class="view" style="gap:12px">
-      <label class="f">Message<input id="f-msg" required maxlength="80" placeholder="Leaving for school in 5 minutes" autocomplete="off"></label>
+      <label class="f">Message<input id="f-msg" required maxlength="80" enterkeyhint="send" placeholder="Leaving for school in 5 minutes" autocomplete="off"></label>
       <div class="acts"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn">Send</button></div></form>`;
   }
   $("#sheetRoot").innerHTML=`<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true">${body}</div></div>`;
@@ -490,6 +521,7 @@ document.addEventListener("click", async e=>{
   unlockAudio();
   const b=e.target.closest("[data-act]"); if(!b) return;
   const a=b.dataset.act, id=b.dataset.id;
+  if(a!=="scrim") tick();
   if(a==="scrim"){ if(e.target===b) closeSheet(); return; }
   if(a==="close") return closeSheet();
   if(a==="sheet") return openSheet(b.dataset.kind,{day:b.dataset.day});
@@ -520,13 +552,14 @@ document.addEventListener("click", async e=>{
   if(a==="selDay"){ S.calSel=b.dataset.day; render(); return; }
   if(a==="mon"){ const d=+b.dataset.d; if(d===0){ const n=new Date(); S.calMonth=new Date(n.getFullYear(),n.getMonth(),1); S.calSel=ymd(n);} else S.calMonth=new Date(S.calMonth.getFullYear(),S.calMonth.getMonth()+d,1); render(); return; }
 });
+function tick(){ try{ navigator.vibrate && navigator.vibrate(12); }catch(e){} }
 function stripId(o){ const {id,...r}=o; return r; }
 function confirmInline(btn, fn){
   if(btn.dataset.armed){ fn(); return; }
   btn.dataset.armed="1"; const old=btn.textContent; btn.textContent="Delete?"; btn.style.color="var(--summon)"; btn.style.fontSize=".85rem"; btn.style.fontWeight="700";
   setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.armed; btn.textContent=old; btn.removeAttribute("style"); } },3000);
 }
-document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>{ S.tab=b.dataset.tab; ls.set("kb.tab",S.tab); render(); }));
+document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>{ tick(); const same=S.tab===b.dataset.tab; S.tab=b.dataset.tab; ls.set("kb.tab",S.tab); render(); try{ window.scrollTo({top:0,behavior:same?"smooth":"auto"}); }catch(e){} }));
 $("#meBtn").addEventListener("click",()=>openSheet("who"));
 $("#soundBtn").addEventListener("click",()=>{ unlockAudio(); S.sound=!S.sound; ls.set("kb.sound",S.sound?"1":"0"); render(); if(S.sound) chime("dinner"); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
